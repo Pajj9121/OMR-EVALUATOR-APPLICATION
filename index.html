@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Detection</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: #fff;
+        }
+        h1 {
+            margin-top: 30px;
+            font-size: 3em;
+        }
+        #video-container {
+            position: relative;
+            margin-top: 20px;
+        }
+        #video {
+            border: 5px solid #fff;
+            border-radius: 10px;
+        }
+        #subtitle {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #000;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Sign Language Detection</h1>
+    <div id="video-container">
+        <img id="video" src="{{ url_for('video_feed') }}">
+        <div id="subtitle">Detected Text: </div>
+    </div>
+    <button onclick="speakDetectedText()">Speak Detected Text</button> <!-- Added button for text-to-speech -->
+
+    <script>
+        const subtitleDiv = document.getElementById('subtitle');
+
+        function fetchDetectedText() {
+            fetch('/detected_text')
+                .then(response => response.json())
+                .then(data => {
+                    subtitleDiv.textContent = `Detected Text: ${data.detected_text}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching detected text:', error);
+                });
+        }
+
+        setInterval(fetchDetectedText, 1000);
+
+        // Function to convert text to speech
+        function speakText(text) {
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.volume = 1; // Volume (0 to 1)
+            speech.rate = 1;   // Speed (0.1 to 10)
+            speech.pitch = 1;  // Pitch (0 to 2)
+            window.speechSynthesis.speak(speech);
+        }
+
+        // Function to speak detected text
+        function speakDetectedText() {
+            const detectedText = document.getElementById('subtitle').textContent;
+            if (detectedText.trim() !== "Detected Text:") { // Check if detected text is not empty
+                speakText(detectedText.trim().substring(15)); // Trim "Detected Text: " from the beginning
+            }
+        }
+    </script>
+</body>
+</html>
